@@ -3,6 +3,8 @@ import numpy as np
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
 
+from sklearn.datasets import make_swiss_roll
+
 def average_full_mat(l, disttype, kerneltype, n, d):
     """
     Generate an average kernel matrix based on the specified distribution type and kernel type.
@@ -23,6 +25,11 @@ def average_full_mat(l, disttype, kerneltype, n, d):
         X = np.random.rand(n, d)
     elif disttype == 'Gaussian':
         X = np.random.randn(n, d)
+    elif disttype == 'sphere':
+        X = np.random.randn(n, d)
+        X /= np.linalg.norm(X, axis=1)[:, None]
+    elif disttype == 'swiss-roll':
+        X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
     else:
         raise ValueError("disttype must be 'uniform' or 'Gaussian'")
 
@@ -30,7 +37,7 @@ def average_full_mat(l, disttype, kerneltype, n, d):
 
     if kerneltype == 'Gaussian':
         for j in range(l):
-            A = generate_gaussian_kernel(X, 1/500)
+            A = generate_gaussian_kernel(X, 1/10000) # play around with sigma
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
     elif kerneltype == 'Cauchy':
         for j in range(l):

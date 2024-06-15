@@ -1,7 +1,5 @@
 import numpy as np
 
-import numpy as np
-
 def create_new_scheme_points(X, n, k, d):
     """
     Generate new scheme points based on the given parameters.
@@ -26,9 +24,9 @@ def create_new_scheme_points(X, n, k, d):
 
         c = np.cumsum(np.concatenate(([0], p)))
         c = c / c[-1]  # Normalize cumulative probabilities
-        i = np.searchsorted(c, np.random.rand(k), side='right') - 1
+        i = np.searchsorted(c, np.random.rand(k), side='right') - 1 # Find the indices of the random numbers in the cumulative probabilities
 
-        coeffs = v[i]
+        coeffs = v[i] # Select the vectors based on the indices
         coeffs[1:] = coeffs[0]
 
         dupled_coeffs = np.tile(coeffs, (X.shape[1], 1))
@@ -56,3 +54,4 @@ def create_new_scheme_points(X, n, k, d):
     print(Xk)
     return Xk.T
 
+# intrinsic dimension d = 2 for sphere and manifold.

@@ -10,10 +10,10 @@ from generate_Gaussian_kernel import generate_gaussian_kernel
 # generate_gaussian_kernel, generate_cauchy_kernel, create_new_scheme_points, average_full_mat, average_repmat
 
 # Average the eigenvalues of the "full matrix"
-result_full = average_full_mat(10, 'uniform', 'Gaussian', 729, 3)
+result_full = average_full_mat(8000, 'sphere', 'Gaussian', 729, 2) 
 
 # Average the eigenvalues of the "sampled matrix"
-result = average_repmat(2000, 'uniform', 'Gaussian', 729, 9, 3)
+result = average_repmat(8000, 'sphere', 'Gaussian', 729, 9, 2) #8000, 49, 7
 
 # Display results
 plt.semilogy(result_full, '.', label='Full Matrix')
