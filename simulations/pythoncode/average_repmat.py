@@ -7,6 +7,31 @@ from generate_Gaussian_kernel import generate_gaussian_kernel
 from sklearn.datasets import make_swiss_roll
 import matplotlib.pyplot as plt
 
+def generate_X(disttype, n, d):
+    """
+    Generate data points based on the specified distribution type.
+
+    Parameters:
+    disttype (str): Distribution type for data points. Must be 'uniform' or 'Gaussian'.
+    n (int): Number of data points.
+    d (int): Dimensionality of data points.
+
+    Returns:
+    ndarray: The generated data points.
+    """
+    if disttype == 'uniform':
+        X = np.random.rand(n, d)
+    elif disttype == 'Gaussian':
+        X = np.random.randn(n, d)
+    elif disttype == 'sphere':
+        X = np.random.randn(n, 3)
+        X /= np.linalg.norm(X, axis=1)[:, None]
+    elif disttype == 'swiss-roll':
+        X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+    else:
+        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
+
+    return X
 def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
     """
     Compute the average of replicated singular values for a given number of iterations.
@@ -26,32 +51,22 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
     ValueError: If disttype is not 'uniform' or 'Gaussian'.
     ValueError: If kerneltype is not 'Gaussian' or 'Cauchy'.
     """
-
-    if disttype == 'uniform':
-        X = np.random.rand(total_pt_num, d)
-    elif disttype == 'Gaussian':
-        X = np.random.randn(total_pt_num, d)
-    elif disttype == 'sphere':
-        X = np.random.randn(total_pt_num, d)
-        X /= np.linalg.norm(X, axis=1)[:, None]
-    elif disttype == 'swiss-roll':
-        X, t = make_swiss_roll(n_samples=total_pt_num, noise=0.05, random_state=0)
-    else:
-        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
-
-    Xk = create_new_scheme_points(X, total_pt_num, select_pt_num, d)
-
     tempresult = []
 
     if kerneltype == 'Gaussian':
         for j in range(l):
-            B = generate_gaussian_kernel(Xk, 1/10000)
+            X = generate_X(disttype, total_pt_num, d)
+            Xk = create_new_scheme_points(X, total_pt_num, select_pt_num, d)
+            B = generate_gaussian_kernel(Xk, 1/100)
             svd_vals = np.linalg.svd(B, compute_uv=False)
+            print(f"svd: {svd_vals}")
             replicated_svd_vals = np.tile(svd_vals, (total_pt_num // select_pt_num, 1)).flatten()
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
 
     elif kerneltype == 'Cauchy':
         for j in range(l): 
+            X = generate_X(disttype, total_pt_num, d)
+            Xk = create_new_scheme_points(X, total_pt_num, select_pt_num, d)
             B = generate_cauchy_kernel(Xk, 10000)
             svd_vals = np.linalg.svd(B, compute_uv=False)
             replicated_svd_vals = np.tile(svd_vals, (total_pt_num // select_pt_num, 1)).flatten()

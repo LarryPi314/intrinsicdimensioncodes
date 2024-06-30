@@ -5,6 +5,31 @@ from generate_Gaussian_kernel import generate_gaussian_kernel
 
 from sklearn.datasets import make_swiss_roll
 
+def generate_X(disttype, n, d):
+    """
+    Generate data points based on the specified distribution type.
+
+    Parameters:
+    disttype (str): Distribution type for data points. Must be 'uniform' or 'Gaussian'.
+    n (int): Number of data points.
+    d (int): Dimensionality of data points.
+
+    Returns:
+    ndarray: The generated data points.
+    """
+    if disttype == 'uniform':
+        X = np.random.rand(n, d)
+    elif disttype == 'Gaussian':
+        X = np.random.randn(n, d)
+    elif disttype == 'sphere':
+        X = np.random.randn(n, 3)
+        X /= np.linalg.norm(X, axis=1)[:, None]
+    elif disttype == 'swiss-roll':
+        X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+    else:
+        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
+    return X
+
 def average_full_mat(l, disttype, kerneltype, n, d):
     """
     Generate an average kernel matrix based on the specified distribution type and kernel type.
@@ -21,25 +46,17 @@ def average_full_mat(l, disttype, kerneltype, n, d):
     Returns:
     ndarray: The average kernel matrix.
     """
-    if disttype == 'uniform':
-        X = np.random.rand(n, d)
-    elif disttype == 'Gaussian':
-        X = np.random.randn(n, d)
-    elif disttype == 'sphere':
-        X = np.random.randn(n, d)
-        X /= np.linalg.norm(X, axis=1)[:, None]
-    elif disttype == 'swiss-roll':
-        X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
-    else:
-        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
+    
 
     tempresult = []
 
     if kerneltype == 'Gaussian':
+        X = generate_X(disttype, n, d)
         for j in range(l):
-            A = generate_gaussian_kernel(X, 1/10000) # play around with sigma
+            A = generate_gaussian_kernel(X, 1/100) # play around with sigma
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
     elif kerneltype == 'Cauchy':
+        X = generate_X(disttype, n, d)
         for j in range(l):
             A = generate_cauchy_kernel(X, 10000)
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
