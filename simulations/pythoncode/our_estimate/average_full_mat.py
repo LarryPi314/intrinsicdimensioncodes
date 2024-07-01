@@ -1,4 +1,5 @@
 import numpy as np
+from vonMises import sample_vmf
 
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
@@ -21,17 +22,21 @@ def average_full_mat(s, disttype, kerneltype, n, d, l):
     Returns:
     ndarray: The average kernel matrix.
     """
+    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    kappa = 10
     if disttype == 'uniform':
-        X = np.random.rand(n, 3)
+        X = np.random.rand(n, 5)
     elif disttype == 'Gaussian':
-        X = np.random.randn(n, d)
+        X = np.random.randn(n, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(n, 4)
+        X = np.random.randn(n, 5)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+    elif disttype == 'vonMises':
+        X = sample_vmf(mu, kappa, n)
     else:
-        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
+        raise ValueError("invalid distribution")
 
     tempresult = []
 
@@ -44,7 +49,7 @@ def average_full_mat(s, disttype, kerneltype, n, d, l):
             A = generate_cauchy_kernel(X, l)
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
     else:
-        raise ValueError("kerneltype must be 'Gaussian' or 'Cauchy'")
+        raise ValueError("invalid kernel function")
 
     result_full = np.zeros(n)
     for k in range(n):

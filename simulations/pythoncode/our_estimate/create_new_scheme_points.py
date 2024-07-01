@@ -82,6 +82,5 @@ def create_new_scheme_points(X, n, k, d):
 
         # Apply transformation
         Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 625, 5), :].T
-    
-    print(Xk)
+        
     return Xk.T

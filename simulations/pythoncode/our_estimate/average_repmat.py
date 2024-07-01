@@ -1,4 +1,6 @@
 import numpy as np
+from vonMises import sample_vmf
+
 from create_new_scheme_points import create_new_scheme_points
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
@@ -24,16 +26,20 @@ def average_repmat(s, disttype, kerneltype, total_pt_num, select_pt_num, d, l):
     ValueError: If disttype is not 'uniform' or 'Gaussian'.
     ValueError: If kerneltype is not 'Gaussian' or 'Cauchy'.
     """
+    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    kappa = 10
 
     if disttype == 'uniform':
-        X = np.random.rand(total_pt_num, 3)
+        X = np.random.rand(total_pt_num, 5)
     elif disttype == 'Gaussian':
-        X = np.random.randn(total_pt_num, d)
+        X = np.random.randn(total_pt_num, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(total_pt_num, 4)
+        X = np.random.randn(total_pt_num, 5)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=total_pt_num, noise=0.05, random_state=0)
+    elif disttype == 'vonMises':
+        X = sample_vmf(mu, kappa, total_pt_num)
     else:
         raise ValueError("disttype must be 'uniform' or 'Gaussian'")
 
@@ -47,8 +53,6 @@ def average_repmat(s, disttype, kerneltype, total_pt_num, select_pt_num, d, l):
             svd_vals = np.linalg.svd(B, compute_uv=False)
             replicated_svd_vals = np.tile(svd_vals, (total_pt_num // select_pt_num, 1)).flatten()
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
-            print(svd_vals)
-            print(s)
 
     elif kerneltype == 'Cauchy':
         for j in range(s):
