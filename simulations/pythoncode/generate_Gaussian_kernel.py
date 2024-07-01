@@ -16,6 +16,6 @@ def generate_gaussian_kernel(vects, l):
     for j in range(n):
         for k in range(n):
             dist_sq = np.sum((vects[j, :] - vects[k, :]) ** 2)
-            A[j, k] = np.exp(-dist_sq / l)
+            A[j, k] = np.exp(-dist_sq / l) 
     return A
 
