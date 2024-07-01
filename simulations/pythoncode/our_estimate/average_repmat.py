@@ -1,5 +1,6 @@
 import numpy as np
 
+from vonMises import sample_vmf
 from create_new_scheme_points import create_new_scheme_points
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
@@ -19,31 +20,37 @@ def generate_X(disttype, n, d):
     Returns:
     ndarray: The generated data points.
     """
+    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    kappa = 10
+
     if disttype == 'uniform':
-        X = np.random.rand(n, d)
+        X = np.random.rand(total_pt_num, 5)
     elif disttype == 'Gaussian':
-        X = np.random.randn(n, d)
+        X = np.random.randn(total_pt_num, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(n, 3)
+        X = np.random.randn(total_pt_num, 5)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
-        X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+        X, t = make_swiss_roll(n_samples=total_pt_num, noise=0.05, random_state=0)
+    elif disttype == 'vonMises':
+        X = sample_vmf(mu, kappa, total_pt_num)
     else:
-        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
-
+        raise ValueError("disttype must be 'uniform' or 'Gaussian' or 'sphere' or 'swiss-roll' or 'vonMises'")
     return X
-def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
+  
+def average_repmat(s, disttype, kerneltype, total_pt_num, select_pt_num, d, l):
+
     """
     Compute the average of replicated singular values for a given number of iterations.
 
     Parameters:
-    l (int): Number of iterations.
+    s (int): Number of iterations.
     disttype (str): Type of distribution for generating points. Must be either 'uniform' or 'Gaussian'.
     kerneltype (str): Type of kernel. Must be either 'Gaussian' or 'Cauchy'.
     total_pt_num (int): Total number of points (vectors randomly generated).
     select_pt_num (int): Number of points to select (among those vectors randomly generated).
-    d (int): Dimension of the points (vectors).
-
+    d (int): Estimate for intrinsic dimension
+    l (float): The length scale
     Returns:
     numpy.ndarray: Array of average values for each point.
 
@@ -54,17 +61,16 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
     tempresult = []
 
     if kerneltype == 'Gaussian':
-        for j in range(l):
+        for j in range(s):
             X = generate_X(disttype, total_pt_num, d)
             Xk = create_new_scheme_points(X, total_pt_num, select_pt_num, d)
             B = generate_gaussian_kernel(Xk, 1/100)
             svd_vals = np.linalg.svd(B, compute_uv=False)
-            print(f"svd: {svd_vals}")
             replicated_svd_vals = np.tile(svd_vals, (total_pt_num // select_pt_num, 1)).flatten()
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
 
     elif kerneltype == 'Cauchy':
-        for j in range(l): 
+        for j in range(s): 
             X = generate_X(disttype, total_pt_num, d)
             Xk = create_new_scheme_points(X, total_pt_num, select_pt_num, d)
             B = generate_cauchy_kernel(Xk, 10000)
@@ -73,14 +79,15 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
     else:
         raise ValueError("kerneltype must be 'Gaussian' or 'Cauchy'")
-    
-    # Compute the average of the replicated singular values
-    result = np.zeros(total_pt_num)
-    for k in range(total_pt_num):
-        avglist = [tempresult[j][k] for j in range(l)]
+
+    result_length = len(tempresult[0])
+    result = np.zeros(result_length)
+    for k in range(result_length):
+        avglist = [tempresult[j][k] for j in range(s)]
         result[k] = np.mean(avglist)
 
     return result
+
 
 # uncomment to visualize datasets
 # def make_sphere(total_pt_num, d):
@@ -100,3 +107,4 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
 #     ax = fig.add_subplot(111, projection='3d')
 #     ax.scatter(X[:, 0], X[:, 1], X[:, 2], cmap=plt.cm.viridis)
 #     plt.show()
+

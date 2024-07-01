@@ -1,11 +1,10 @@
 import numpy as np
-
 from create_new_scheme_points import create_new_scheme_points
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
-
 from sklearn.datasets import make_swiss_roll
 import matplotlib.pyplot as plt
+
 
 def generate_X(disttype, n, d):
     """
@@ -51,6 +50,7 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
     ValueError: If disttype is not 'uniform' or 'Gaussian'.
     ValueError: If kerneltype is not 'Gaussian' or 'Cauchy'.
     """
+
     tempresult = []
 
     if kerneltype == 'Gaussian':
@@ -62,6 +62,8 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
             print(f"svd: {svd_vals}")
             replicated_svd_vals = np.tile(svd_vals, (total_pt_num // select_pt_num, 1)).flatten()
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
+            print(svd_vals)
+            print(s)
 
     elif kerneltype == 'Cauchy':
         for j in range(l): 
@@ -73,30 +75,34 @@ def average_repmat(l, disttype, kerneltype, total_pt_num, select_pt_num, d):
             tempresult.append(np.sort(replicated_svd_vals)[::-1])
     else:
         raise ValueError("kerneltype must be 'Gaussian' or 'Cauchy'")
-    
+
     # Compute the average of the replicated singular values
-    result = np.zeros(total_pt_num)
-    for k in range(total_pt_num):
-        avglist = [tempresult[j][k] for j in range(l)]
+    result_length = len(tempresult[0])
+    result = np.zeros(result_length)
+    for k in range(result_length):
+        avglist = [tempresult[j][k] for j in range(s)]
         result[k] = np.mean(avglist)
 
     return result
 
-# uncomment to visualize datasets
-# def make_sphere(total_pt_num, d):
+
+    
+
+# # uncomment to visualize datasets
+# #def make_sphere(total_pt_num, d):
 #     '''
 #     Samples points from a uniform spherical distribution using numpy
 #     '''
-#     X = np.random.randn(total_pt_num, d)
-#     X /= np.linalg.norm(X, axis=1)[:, None]
-#     return X
+#  #   X = np.random.randn(total_pt_num, d)
+#   ## return X
 
 # if __name__ == "__main__":
-#     from sklearn.datasets import make_swiss_roll
-#     X, t = make_swiss_roll(n_samples=500,noise=0.05, random_state=0)
-#     # X = make_sphere(500, 3)
-#     # plot the swiss roll
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111, projection='3d')
-#     ax.scatter(X[:, 0], X[:, 1], X[:, 2], cmap=plt.cm.viridis)
-#     plt.show()
+#     # from sklearn.datasets import make_swiss_roll
+#     # X, t = make_swiss_roll(n_samples=500,noise=0.05, random_state=0)
+#     # # X = make_sphere(500, 3)
+#     # # plot the swiss roll
+#     # fig = plt.figure()
+#     # ax = fig.add_subplot(111, projection='3d')
+#     # ax.scatter(X[:, 0], X[:, 1], X[:, 2], cmap=plt.cm.viridis)
+#     print("Hello world!")
+#     # plt.show()

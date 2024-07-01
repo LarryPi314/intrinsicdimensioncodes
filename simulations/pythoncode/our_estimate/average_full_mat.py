@@ -1,5 +1,6 @@
 import numpy as np
 
+from vonMises import sample_vmf
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
 
@@ -15,22 +16,26 @@ def generate_X(disttype, n, d):
     d (int): Dimensionality of data points.
 
     Returns:
-    ndarray: The generated data points.
+    ndarray: The average kernel matrix.
     """
+    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    kappa = 10
     if disttype == 'uniform':
-        X = np.random.rand(n, d)
+        X = np.random.rand(n, 5)
     elif disttype == 'Gaussian':
-        X = np.random.randn(n, d)
+        X = np.random.randn(n, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(n, 3)
+        X = np.random.randn(n, 5)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+    elif disttype == 'vonMises':
+        X = sample_vmf(mu, kappa, n)
     else:
-        raise ValueError("disttype must be 'uniform' or 'Gaussian'")
+        raise ValueError("invalid distribution")
     return X
 
-def average_full_mat(l, disttype, kerneltype, n, d):
+def average_full_mat(s, disttype, kerneltype, n, d, l):
     """
     Generate an average kernel matrix based on the specified distribution type and kernel type.
     This function obtains the average eigenvalues of the kernel matrices generated
@@ -46,8 +51,6 @@ def average_full_mat(l, disttype, kerneltype, n, d):
     Returns:
     ndarray: The average kernel matrix.
     """
-    
-
     tempresult = []
 
     if kerneltype == 'Gaussian':

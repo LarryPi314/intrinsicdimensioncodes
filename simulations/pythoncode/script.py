@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from average_full_mat import average_full_mat
@@ -17,3 +18,5 @@ plt.semilogy(result_full, '.', label='Full Matrix')
 plt.semilogy(result, 'x', label='Sampled Matrix')
 plt.legend()
 plt.show()
+
+

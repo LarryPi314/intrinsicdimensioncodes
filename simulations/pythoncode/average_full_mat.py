@@ -18,7 +18,7 @@ def generate_X(disttype, n, d):
     ndarray: The generated data points.
     """
     if disttype == 'uniform':
-        X = np.random.rand(n, d)
+        X = np.random.rand(n, 3)
     elif disttype == 'Gaussian':
         X = np.random.randn(n, d)
     elif disttype == 'sphere':
@@ -65,7 +65,7 @@ def average_full_mat(l, disttype, kerneltype, n, d):
 
     result_full = np.zeros(n)
     for k in range(n):
-        avglist = [tempresult[j][k] for j in range(l)]
+        avglist = [tempresult[j][k] for j in range(s)]
         result_full[k] = np.mean(avglist)
 
     return result_full

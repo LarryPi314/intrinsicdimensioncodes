@@ -50,6 +50,38 @@ def create_new_scheme_points(X, n, k, d):
 
         # Apply transformation
         Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 729, 9), :].T
+
+    elif (n == 125 and k == 5):
+        p = np.array([0.00353251, 0.977753, 0.0187149])
+        v = np.array([-104.149, 29.3087, 144.874])
+
+        c = np.cumsum(np.concatenate(([0], p)))
+        c = c / c[-1]  # Normalize cumulative probabilities
+        i = np.searchsorted(c, np.random.rand(k), side='right') - 1
+
+        coeffs = v[i]
+        coeffs[1:] = coeffs[0]
+
+        dupled_coeffs = np.tile(coeffs, (X.shape[1], 1))
+
+        # Apply transformation
+        Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 125, 5), :].T
+
+    elif (n == 625 and k == 5):
+        p = np.array([0.00417283, 0.167741, 0.828086])
+        v = np.array([1063.17, 1, 182.826])
+
+        c = np.cumsum(np.concatenate(([0], p)))
+        c = c / c[-1]  # Normalize cumulative probabilities
+        i = np.searchsorted(c, np.random.rand(k), side='right') - 1
+
+        coeffs = v[i]
+        coeffs[1:] = coeffs[0]
+
+        dupled_coeffs = np.tile(coeffs, (X.shape[1], 1))
+
+        # Apply transformation
+        Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 625, 5), :].T
     
     elif(n == 125 and k == 5): #added new n, k cases
         p = np.array([0.00353251, 0.977753, 0.0187149])
@@ -67,5 +99,3 @@ def create_new_scheme_points(X, n, k, d):
         # Apply transformation
         Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 125, 5), :].T
     return Xk.T
-
-# intrinsic dimension d = 2 for sphere and manifold.
