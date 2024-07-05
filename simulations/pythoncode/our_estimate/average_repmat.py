@@ -26,7 +26,7 @@ def average_repmat(s, disttype, kerneltype, total_pt_num, select_pt_num, d, l):
     ValueError: If disttype is not 'uniform' or 'Gaussian'.
     ValueError: If kerneltype is not 'Gaussian' or 'Cauchy'.
     """
-    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    mu = np.array([-np.sqrt(1/3), -np.sqrt(1/3), -np.sqrt(1/3), 0])
     kappa = 10
 
     if disttype == 'uniform':
@@ -34,7 +34,7 @@ def average_repmat(s, disttype, kerneltype, total_pt_num, select_pt_num, d, l):
     elif disttype == 'Gaussian':
         X = np.random.randn(total_pt_num, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(total_pt_num, 5)
+        X = np.random.randn(total_pt_num, 2)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=total_pt_num, noise=0.05, random_state=0)

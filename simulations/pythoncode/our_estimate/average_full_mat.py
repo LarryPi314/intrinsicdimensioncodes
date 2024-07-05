@@ -22,14 +22,14 @@ def average_full_mat(s, disttype, kerneltype, n, d, l):
     Returns:
     ndarray: The average kernel matrix.
     """
-    mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+    mu = np.array([-np.sqrt(1/3), -np.sqrt(1/3), -np.sqrt(1/3), 0])
     kappa = 10
     if disttype == 'uniform':
         X = np.random.rand(n, 5)
     elif disttype == 'Gaussian':
         X = np.random.randn(n, 2)
     elif disttype == 'sphere':
-        X = np.random.randn(n, 5)
+        X = np.random.randn(n, 2)
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
