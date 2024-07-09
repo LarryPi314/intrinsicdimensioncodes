@@ -2,7 +2,7 @@
 import torch
 from torch import nn
 import numpy as np
-
+import utils
 import torch.nn.functional as F
 
 class VAE(nn.Module):
@@ -29,12 +29,14 @@ class VAE(nn.Module):
 
         s = x.shape[0] # number of samples
         mu, logvar = self.e(x)  # parameters of approximate posterior
-        z, eps = self.sample_ezx(x,mu, logvar)
+        z, eps = self.sample_ezx(x, mu, logvar)
         gz = self.g(z)
 
         log_pzx = torch.sum(self.log_prob_pzx(z,x,gz)[0])
 
         log_ezx = -0.5*torch.norm(eps)**2 - 0.5*torch.sum(logvar) - (z.shape[1]/2)*np.log(2*np.pi)
+
+
 
         return (-log_pzx+log_ezx)/s, (-log_pzx/s).item(), (log_ezx/s).item(), gz.detach(), mu.detach()
 
@@ -73,7 +75,7 @@ class VAE(nn.Module):
         ezx = -torch.sum((0.5 / torch.exp(logvar)) * (z - mu) ** 2, dim=1) - 0.5 * torch.sum(logvar,dim=1) - (q/2)*np.log(2*np.pi)
         return ezx
 
-    def log_prob_pzx(self,z,x,gz=None):
+    def log_prob_pzx(self,z,x,gz=None,sigma=1.0):
         """
         :param z: latent sample
         :param x: data sample
@@ -81,9 +83,16 @@ class VAE(nn.Module):
         """
         if gz is None:
             gz = self.g(z)
-        n = x.shape[1]
-        px = -F.binary_cross_entropy(gz.view(-1, 784), x.view(-1, 784), reduction='none')
-        px = torch.sum(px,dim=1)
-        pz = - 0.5 * torch.norm(z, dim=1) ** 2  - (n/2)*np.log(2*np.pi)
-        return px + pz, px, pz
+        n = z.shape[1]
 
+        # For MNIST
+        #px = -F.binary_cross_entropy(gz.view(-1, 784), x.view(-1, 784), reduction='none')
+        #px = torch.sum(px,dim=1)
+
+        # Calculate log(p(x|z)) as negative reconstruction error
+        px = -0.5 * torch.sum((x - gz) ** 2 / (sigma ** 2), dim=(1, 2)) - (x.shape[1] * x.shape[2]) * np.log(sigma * np.sqrt(2 * np.pi))
+    
+        # Calculate log(p(z)) assuming a Gaussian prior
+        pz = -0.5 * torch.sum(z ** 2, dim=(1, 2)) - (z.shape[1] / 2) * np.log(2 * np.pi)
+
+        return px + pz, px, pz
