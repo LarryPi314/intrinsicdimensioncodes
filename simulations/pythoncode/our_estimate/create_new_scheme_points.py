@@ -17,7 +17,7 @@ def create_new_scheme_points(X, n, k, d):
     Returns:
     numpy.ndarray: Transformed data array.
     """
-
+    Xk = np.zeros((k, X.shape[1]))
     if (n == 49 and k == 7):
         p = np.array([0.411659, 0.568099, 0.0202407, 0.0000014709])
         v = np.array([4.8651, 9.68274, 24.5194, 130.899])
@@ -66,6 +66,7 @@ def create_new_scheme_points(X, n, k, d):
 
         # Apply transformation
         Xk = (1. / dupled_coeffs) ** (1 / d) * X[np.random.randint(0, 125, 5), :].T
+    
     return Xk.T
 
 # intrinsic dimension d = 2 for sphere and manifold.

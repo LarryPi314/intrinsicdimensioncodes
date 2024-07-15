@@ -1,3 +1,4 @@
+
 import skdim
 import numpy as np
 import pandas as pd
@@ -39,6 +40,7 @@ def plot_subplots(data_list):
 
 def twoNN_estimate(data):
     return skdim.id.TwoNN().fit(X = data).dimension_
+
 def kNN_estimate(data):
     return skdim.id.KNN().fit(X = data).dimension_
 

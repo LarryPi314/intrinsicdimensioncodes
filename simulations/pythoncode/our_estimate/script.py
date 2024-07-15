@@ -6,11 +6,17 @@ from create_new_scheme_points import create_new_scheme_points
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
 
-# Average the eigenvalues of the "full matrix"
-result_full = average_full_mat(10, 'sphere', 'Gaussian', 729, 2) 
+n=625
+k=5
+d=2
+l=.05
 
-# Average the eigenvalues of the "sampled matrix"
-result = average_repmat(50, 'sphere', 'Gaussian', 729, 9, 2) # adjust n, k, d hyperparameters as needed. 
+
+print("<==== RUNNING CODE ====>")
+
+result_full = average_full_mat(20, 'sphere', 'Gaussian', n, d, l) 
+
+result = average_repmat(5000, 'sphere', 'Gaussian', n, k, d, l) 
 
 # Display results
 plt.semilogy(result_full, '.', label='Full Matrix')

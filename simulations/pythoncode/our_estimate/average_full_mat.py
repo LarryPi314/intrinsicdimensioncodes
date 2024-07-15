@@ -2,6 +2,7 @@ import numpy as np
 
 from generate_Cauchy_kernel import generate_cauchy_kernel
 from generate_Gaussian_kernel import generate_gaussian_kernel
+from vonMises import sample_vmf
 
 from sklearn.datasets import make_swiss_roll
 
@@ -26,22 +27,27 @@ def generate_X(disttype, n, d):
         X /= np.linalg.norm(X, axis=1)[:, None]
     elif disttype == 'swiss-roll':
         X, t = make_swiss_roll(n_samples=n, noise=0.05, random_state=0)
+    elif disttype == 'vonMises':
+        mu = np.array([-np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), -np.sqrt(1/5), 0])
+        kappa = 10
+        X = sample_vmf(mu, kappa, n)
     else:
         raise ValueError("disttype must be 'uniform' or 'Gaussian'")
     return X
 
-def average_full_mat(l, disttype, kerneltype, n, d):
+def average_full_mat(reps, disttype, kerneltype, n, d, l):
     """
     Generate an average kernel matrix based on the specified distribution type and kernel type.
     This function obtains the average eigenvalues of the kernel matrices generated
     using the specified distribution type and kernel type.
 
     Parameters:
-    l (int): Number of kernel matrices to generate.
+    reps (int): Number of kernel matrices to generate.
     disttype (str): Distribution type for data points. Must be 'uniform' or 'Gaussian'.
     kerneltype (str): Kernel type. Must be 'Gaussian' or 'Cauchy'.
     n (int): Number of data points.
     d (int): Dimensionality of data points.
+    l (float): The bandwidth parameter for the kernel matrix.
 
     Returns:
     ndarray: The average kernel matrix.
@@ -52,20 +58,20 @@ def average_full_mat(l, disttype, kerneltype, n, d):
 
     if kerneltype == 'Gaussian':
         X = generate_X(disttype, n, d)
-        for j in range(l):
-            A = generate_gaussian_kernel(X, 1/100) # play around with sigma
+        for j in range(reps):
+            A = generate_gaussian_kernel(X, l) # play around with sigma
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
     elif kerneltype == 'Cauchy':
         X = generate_X(disttype, n, d)
-        for j in range(l):
-            A = generate_cauchy_kernel(X, 10000)
+        for j in range(reps):
+            A = generate_cauchy_kernel(X, l)
             tempresult.append(np.sort(np.linalg.svd(A, compute_uv=False))[::-1])
     else:
         raise ValueError("kerneltype must be 'Gaussian' or 'Cauchy'")
 
     result_full = np.zeros(n)
     for k in range(n):
-        avglist = [tempresult[j][k] for j in range(l)]
+        avglist = [tempresult[j][k] for j in range(reps)]
         result_full[k] = np.mean(avglist)
 
     return result_full
